@@ -9,7 +9,7 @@
     'mediaTargetType', 'mediaTargetId' ]}
 
 {* Получаем тип редактора *}
-{$type = ( ( $type ) ? $type : ( Config::Get('view.wysiwyg') ) ? 'visual' : 'markup' )}
+{$type = ( ( $type ) ? $type : (( Config::Get('view.wysiwyg') ) ? 'visual' : 'markup' ))}
 {$set = $set|default:'default'}
 
 {* Уникальный ID *}

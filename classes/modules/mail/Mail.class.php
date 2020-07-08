@@ -19,7 +19,11 @@
  *
  */
 
-require_once(Config::Get('path.framework.libs_vendor.server') . '/phpMailer/PHPMailerAutoload.php');
+use PHPMailer\PHPMailer\PHPMailer;
+
+require_once(Config::Get('path.framework.libs_vendor.server') . '/phpMailer/src/Exception.php');
+require_once(Config::Get('path.framework.libs_vendor.server') . '/phpMailer/src/PHPMailer.php');
+require_once(Config::Get('path.framework.libs_vendor.server') . '/phpMailer/src/SMTP.php');
 
 /**
  * Модуль для отправки почты(e-mail) через phpMailer
@@ -173,7 +177,7 @@ class ModuleMail extends Module
         /**
          * Создаём объект phpMailer и устанвливаем ему необходимые настройки
          */
-        $this->oMailer = new phpmailer();
+        $this->oMailer = new PHPMailer(true);
         $this->oMailer->Host = $this->sHost;
         $this->oMailer->Port = $this->iPort;
         $this->oMailer->Username = $this->sUsername;
@@ -187,6 +191,8 @@ class ModuleMail extends Module
         $this->oMailer->From = $this->sFrom;
         $this->oMailer->Sender = $this->sFrom;
         $this->oMailer->FromName = $this->sFromName;
+    
+        $this->oMailer->isHTML(true);
         /**
          * Настройки DKIM
          */

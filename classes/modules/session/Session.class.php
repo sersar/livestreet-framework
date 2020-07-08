@@ -57,13 +57,26 @@ class ModuleSession extends Module
     protected function Start()
     {
         session_name(Config::Get('sys.session.name'));
-        session_set_cookie_params(
-            Config::Get('sys.session.timeout'),
-            Config::Get('sys.session.path'),
-            Config::Get('sys.session.host'),
-            Config::Get('sys.session.secure'),
-            Config::Get('sys.session.httponly')
-        );
+        if (PHP_VERSION_ID < 70300) {
+            session_set_cookie_params(
+                Config::Get('sys.session.timeout'),
+                Config::Get('sys.session.path') . '; sameSite=' . Config::Get('sys.cookie.sameSite'),
+                Config::Get('sys.session.host'),
+                Config::Get('sys.session.secure'),
+                Config::Get('sys.session.httponly')
+            );
+        } else {
+            session_set_cookie_params(
+                [
+                    'lifetime' => Config::Get('sys.session.timeout'),
+                    'path' => Config::Get('sys.cookie.path'),
+                    'domain' => Config::Get('sys.cookie.host'),
+                    'sameSite' => Config::Get('sys.cookie.sameSite'),
+                    'secure' => Config::Get('sys.session.secure'),
+                    'httponly' => Config::Get('sys.session.httponly'),
+                ]
+            );
+        }
         if (!session_id()) {
             /**
              * Попытка подменить идентификатор имени сессии через куку
@@ -185,8 +198,18 @@ class ModuleSession extends Module
     public function SetCookie($sName, $sValue, $iTime = null, $bSecure = false, $bHttpOnly = false)
     {
         $_COOKIE[$sName] = $sValue;
-        setcookie($sName, $sValue, $iTime, Config::Get('sys.cookie.path'), Config::Get('sys.cookie.host'), $bSecure,
-            $bHttpOnly);
+        if (PHP_VERSION_ID < 70300) {
+            setcookie($sName, $sValue, $iTime, Config::Get('sys.cookie.path') . '; sameSite=' . Config::Get('sys.cookie.sameSite'), Config::Get('sys.cookie.host'), $bSecure, $bHttpOnly);
+        } else {
+            setcookie($sName, $sValue, [
+                'expires' => $iTime,
+                'path' => Config::Get('sys.cookie.path'),
+                'domain' => Config::Get('sys.cookie.host'),
+                'sameSite' => Config::Get('sys.cookie.sameSite'),
+                'secure' => $bSecure,
+                'httponly' => $bHttpOnly,
+            ]);
+        }
     }
 
     /**
